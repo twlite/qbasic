@@ -14,7 +14,6 @@
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true,
         "sourceMap": true,
-        "importHelpers": true,
         "newLine": "lf",
         "forceConsistentCasingInFileNames": true,
         "baseUrl": "."
