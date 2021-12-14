@@ -1,23 +1,34 @@
 #!/usr/bin/env node
 
-const { compileFile } = require("./index");
-const source = process.argv
-    .find((x) => x.startsWith("--source="))
-    ?.split("=")
-    .pop();
-const printBytecode = process.argv.some((x) => x === "--print-bytecode");
+if (process.argv.includes("--help")) {
+    console.log(`
+qbasic.js
+Example: qbasic --src=./file.bas
 
-if (!source) {
-    console.log("No source file provided!");
+Commands:
+[1] --src            :: Source file to execute
+[2] --print-bytecode :: Only output the bytecode
+[3] --help           :: Shows this menu
+    `);
 } else {
-    try {
-        const compiled = compileFile(source);
-        if (printBytecode) {
-            setTimeout(() => {
+    const { compileFile } = require("./index");
+    
+    const source = process.argv
+        .find((x) => x.startsWith("--src=") || x.startsWith("--source"))
+        ?.split("=")
+        .pop();
+    const printBytecode = process.argv.some((x) => x === "--print-bytecode");
+    
+    if (!source) {
+        console.log("\x1b[31mError: No source file provided!\x1b[0m");
+    } else {
+        try {
+            const compiled = compileFile(source, !!printBytecode);
+            if (printBytecode) {
                 console.log(compiled.bytecode);
-            }, 1000);
+            }
+        } catch (err) {
+            console.error(`\x1b[31mCompilation error:\n${(err as Error).message || err}\x1b[0m`);
         }
-    } catch (err) {
-        console.error(`Compilation error:\n${(err as Error).message || err}`);
     }
 }

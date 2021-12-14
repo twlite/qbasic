@@ -1,12 +1,11 @@
 // @ts-nocheck
 
 // qb.js remastered for nodejs
-import readline from "readline-sync";
-
 class Console {
     _x = 0;
     onMessage = (m: string): any => {};
     onClear = (): any => {};
+    onInput = (): string => "";
     cls() {
         this.onClear();
     }
@@ -14,8 +13,7 @@ class Console {
         this.onMessage(...args);
     }
     getKeyFromBuffer() {
-        const input = readline.question("").charCodeAt(0);
-
+        const input = this.onInput().charCodeAt(0);
         return input;
     }
     get x() {
@@ -26,7 +24,7 @@ class Console {
     }
     locate() {}
     input(onInputDone) {
-        const res = readline.question("");
+        const res = this.onInput();
         return onInputDone(res);
     }
     color() {}
@@ -1328,7 +1326,7 @@ var SystemSubroutines = {
 
     CLS: {
         action: function (vm) {
-            console.clear();
+            vm.cons.cls();
         }
     },
 

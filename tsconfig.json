@@ -13,7 +13,6 @@
         "skipDefaultLibCheck": true,
         "experimentalDecorators": true,
         "emitDecoratorMetadata": true,
-        "sourceMap": true,
         "newLine": "lf",
         "forceConsistentCasingInFileNames": true,
         "baseUrl": "."
