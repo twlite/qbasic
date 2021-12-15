@@ -1,6 +1,6 @@
 # QBasic.js
 
-QBasic.js allows you to use QBasic inside node.js
+QBasic.js allows you to use **[qb.js](https://github.com/smhanov/qb.js)** inside node projects.
 
 # Example
 
@@ -21,7 +21,7 @@ fs.writeFileSync("./bytecode.txt", bytecode);
 
 `demo.bas`
 
-```bas
+```basic
 CLS
 PRINT "Hello from QBasic"
 END
@@ -31,15 +31,15 @@ END
 
 ```txt
    ' L1 CLS
-[0] syscall CLS
+syscall CLS
    ' L2 PRINT "Hello from QBasic"
-[1] pushconst Hello from QBasic
-[2] syscall print
-[3] pushconst 
+pushconst Hello from QBasic
+syscall print
+pushconst 
 
-[4] syscall print
+syscall print
    ' L3 END
-[5] end
-[6] ret
-[7] end
+end
+ret
+end
 ```

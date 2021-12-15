@@ -5,7 +5,7 @@ class Console {
     _x = 0;
     onMessage = (m: string): any => {};
     onClear = (): any => {};
-    onInput = (): string => "";
+    onInput = (): string | number => "";
     cls() {
         this.onClear();
     }
@@ -32,290 +32,6 @@ class Console {
         this.onClear();
     }
 }
-
-function DebugConsole() {}
-
-DebugConsole.prototype.print = function (str) {
-    if (!this.console) this.console = new Console();
-    this.console.print(str);
-};
-
-DebugConsole.prototype.printf = function () {
-    function convert(match, nosign) {
-        if (nosign) {
-            match.sign = "";
-        } else {
-            match.sign = match.negative ? "-" : match.sign;
-        }
-        var l = match.min - match.argument.length + 1 - match.sign.length;
-        var pad = new Array(l < 0 ? 0 : l).join(match.pad);
-        if (!match.left) {
-            if (match.pad == "0" || nosign) {
-                return match.sign + pad + match.argument;
-            } else {
-                return pad + match.sign + match.argument;
-            }
-        } else {
-            if (match.pad == "0" || nosign) {
-                return match.sign + match.argument + pad.replace(/0/g, " ");
-            } else {
-                return match.sign + match.argument + pad;
-            }
-        }
-    }
-
-    if (typeof arguments == "undefined") {
-        return;
-    }
-    if (arguments.length < 1) {
-        return;
-    }
-    var args = arguments;
-    if (args[0] instanceof Array) {
-        args = args[0];
-    }
-    if (typeof args[0] != "string") {
-        return;
-    }
-    if (typeof RegExp == "undefined") {
-        return;
-    }
-
-    var string = args[0];
-    var exp = new RegExp(/(%([%]|(\-)?(\+|\x20)?(0)?(\d+)?(\.(\d)?)?([bcdfosxX])))/g);
-    var matches = [];
-    var strings = [];
-    var convCount = 0;
-    var stringPosStart = 0;
-    var stringPosEnd = 0;
-    var matchPosEnd = 0;
-    var newString = "";
-    var match = null;
-    var substitution;
-
-    for (;;) {
-        match = exp.exec(string);
-        if (!match) {
-            break;
-        }
-        if (match[9]) {
-            convCount += 1;
-        }
-
-        stringPosStart = matchPosEnd;
-        stringPosEnd = exp.lastIndex - match[0].length;
-        strings[strings.length] = string.substring(stringPosStart, stringPosEnd);
-
-        matchPosEnd = exp.lastIndex;
-        matches[matches.length] = {
-            match: match[0],
-            left: match[3] ? true : false,
-            sign: match[4] || "",
-            pad: match[5] || " ",
-            min: match[6] || 0,
-            precision: match[8],
-            code: match[9] || "%",
-            negative: parseInt(args[convCount], 10) < 0 ? true : false,
-            argument: String(args[convCount])
-        };
-    }
-    strings[strings.length] = string.substring(matchPosEnd);
-
-    if (args.length - 1 < convCount) {
-        return;
-    }
-
-    var i = null;
-
-    for (i = 0; i < matches.length; i++) {
-        if (matches[i].code == "%") {
-            substitution = "%";
-        } else if (matches[i].code == "b") {
-            matches[i].argument = String(Math.abs(parseInt(matches[i].argument, 10)).toString(2));
-            substitution = convert(matches[i], true);
-        } else if (matches[i].code == "c") {
-            matches[i].argument = String(String.fromCharCode(parseInt(Math.abs(parseInt(matches[i].argument, 10)), 10)));
-            substitution = convert(matches[i], true);
-        } else if (matches[i].code == "d") {
-            matches[i].argument = String(Math.abs(parseInt(matches[i].argument, 10)));
-            substitution = convert(matches[i]);
-        } else if (matches[i].code == "f") {
-            matches[i].argument = String(Math.abs(parseFloat(matches[i].argument)).toFixed(matches[i].precision ? matches[i].precision : 6));
-            substitution = convert(matches[i]);
-        } else if (matches[i].code == "o") {
-            matches[i].argument = String(Math.abs(parseInt(matches[i].argument, 10)).toString(8));
-            substitution = convert(matches[i]);
-        } else if (matches[i].code == "s") {
-            matches[i].argument = matches[i].argument.substring(0, matches[i].precision ? matches[i].precision : matches[i].argument.length);
-            substitution = convert(matches[i], true);
-        } else if (matches[i].code == "x") {
-            matches[i].argument = String(Math.abs(parseInt(matches[i].argument, 10)).toString(16));
-            substitution = convert(matches[i]);
-        } else if (matches[i].code == "X") {
-            matches[i].argument = String(Math.abs(parseInt(matches[i].argument, 10)).toString(16));
-            substitution = convert(matches[i]).toUpperCase();
-        } else {
-            substitution = matches[i].match;
-        }
-
-        newString += strings[i];
-        newString += substitution;
-    }
-
-    newString += strings[i];
-    this.print(newString);
-};
-
-function sprintf() {
-    var args = arguments;
-    if (args.length == 1 && args[0] instanceof Array) {
-        args = args[0];
-    }
-    var format = args[0];
-    var output = "";
-
-    var segments = format.split(/%[^%]/);
-    for (var i = 0; i < segments.length; i++) {
-        output += segments[i];
-        if (args[i + 1] !== undefined) {
-            output += args[i + 1];
-        }
-    }
-
-    return output;
-}
-
-function DebugConsole() {}
-
-DebugConsole.prototype.print = function (str) {
-    console.log(str);
-};
-
-DebugConsole.prototype.printf = function () {
-    function convert(match, nosign) {
-        if (nosign) {
-            match.sign = "";
-        } else {
-            match.sign = match.negative ? "-" : match.sign;
-        }
-        var l = match.min - match.argument.length + 1 - match.sign.length;
-        var pad = new Array(l < 0 ? 0 : l).join(match.pad);
-        if (!match.left) {
-            if (match.pad == "0" || nosign) {
-                return match.sign + pad + match.argument;
-            } else {
-                return pad + match.sign + match.argument;
-            }
-        } else {
-            if (match.pad == "0" || nosign) {
-                return match.sign + match.argument + pad.replace(/0/g, " ");
-            } else {
-                return match.sign + match.argument + pad;
-            }
-        }
-    }
-
-    if (typeof arguments == "undefined") {
-        return;
-    }
-    if (arguments.length < 1) {
-        return;
-    }
-    var args = arguments;
-    if (args[0] instanceof Array) {
-        args = args[0];
-    }
-    if (typeof args[0] != "string") {
-        return;
-    }
-    if (typeof RegExp == "undefined") {
-        return;
-    }
-
-    var string = args[0];
-    var exp = new RegExp(/(%([%]|(\-)?(\+|\x20)?(0)?(\d+)?(\.(\d)?)?([bcdfosxX])))/g);
-    var matches = [];
-    var strings = [];
-    var convCount = 0;
-    var stringPosStart = 0;
-    var stringPosEnd = 0;
-    var matchPosEnd = 0;
-    var newString = "";
-    var match = null;
-    var substitution;
-
-    for (;;) {
-        match = exp.exec(string);
-        if (!match) {
-            break;
-        }
-        if (match[9]) {
-            convCount += 1;
-        }
-
-        stringPosStart = matchPosEnd;
-        stringPosEnd = exp.lastIndex - match[0].length;
-        strings[strings.length] = string.substring(stringPosStart, stringPosEnd);
-
-        matchPosEnd = exp.lastIndex;
-        matches[matches.length] = {
-            match: match[0],
-            left: match[3] ? true : false,
-            sign: match[4] || "",
-            pad: match[5] || " ",
-            min: match[6] || 0,
-            precision: match[8],
-            code: match[9] || "%",
-            negative: parseInt(args[convCount], 10) < 0 ? true : false,
-            argument: String(args[convCount])
-        };
-    }
-    strings[strings.length] = string.substring(matchPosEnd);
-
-    if (args.length - 1 < convCount) {
-        return;
-    }
-
-    var i = null;
-
-    for (i = 0; i < matches.length; i++) {
-        if (matches[i].code == "%") {
-            substitution = "%";
-        } else if (matches[i].code == "b") {
-            matches[i].argument = String(Math.abs(parseInt(matches[i].argument, 10)).toString(2));
-            substitution = convert(matches[i], true);
-        } else if (matches[i].code == "c") {
-            matches[i].argument = String(String.fromCharCode(parseInt(Math.abs(parseInt(matches[i].argument, 10)), 10)));
-            substitution = convert(matches[i], true);
-        } else if (matches[i].code == "d") {
-            matches[i].argument = String(Math.abs(parseInt(matches[i].argument, 10)));
-            substitution = convert(matches[i]);
-        } else if (matches[i].code == "f") {
-            matches[i].argument = String(Math.abs(parseFloat(matches[i].argument)).toFixed(matches[i].precision ? matches[i].precision : 6));
-            substitution = convert(matches[i]);
-        } else if (matches[i].code == "o") {
-            matches[i].argument = String(Math.abs(parseInt(matches[i].argument, 10)).toString(8));
-            substitution = convert(matches[i]);
-        } else if (matches[i].code == "s") {
-            matches[i].argument = matches[i].argument.substring(0, matches[i].precision ? matches[i].precision : matches[i].argument.length);
-            substitution = convert(matches[i], true);
-        } else if (matches[i].code == "x") {
-            matches[i].argument = String(Math.abs(parseInt(matches[i].argument, 10)).toString(16));
-            substitution = convert(matches[i]);
-        } else if (matches[i].code == "X") {
-            matches[i].argument = String(Math.abs(parseInt(matches[i].argument, 10)).toString(16));
-            substitution = convert(matches[i]).toUpperCase();
-        } else {
-            substitution = matches[i].match;
-        }
-
-        newString += strings[i];
-        newString += substitution;
-    }
-
-    newString += strings[i];
-    this.print(newString);
-};
 
 function sprintf() {
     var args = arguments;
@@ -960,7 +676,6 @@ TraceBuffer.prototype = {
         if (this.lines.length > this.MAX_LINES) {
             this.lines.shift();
         }
-        dbg.printf("%s", str);
     }
 };
 
@@ -1373,7 +1088,6 @@ var SystemSubroutines = {
 
                 if (ch === "#") {
                     if (curArg === args.length || !IsNumericType(args[curArg].type)) {
-                        dbg.printf("Type mismatch error.\n");
                         break;
                     }
 
@@ -1989,7 +1703,6 @@ TypeChecker.prototype = {
         }
         var errorStr = "Error at " + object.locus + ": " + sprintf(args);
         this.errors.push(errorStr);
-        dbg.print(this.errors.join("\n"));
     },
 
     removeSuffix: function (name) {
@@ -2098,9 +1811,7 @@ TypeChecker.prototype = {
                 continue;
             }
 
-            if (sub.statements[i].accept === undefined) {
-                dbg.printf("ERROR: Could not visit object of type %s\n", sub.statements[i]);
-            } else {
+            if (sub.statements[i].accept !== undefined) {
                 sub.statements[i].accept(this);
             }
         }
@@ -2670,10 +2381,7 @@ EarleyParser.prototype = {
             var token = this.tokenizer.nextToken(line, position);
             if (token === null) {
                 this.errors.push(sprintf("Bad token at %d:%d\n", line, position));
-                dbg.printf("Bad token!\n");
                 return null;
-            } else if (this.debug) {
-                dbg.printf("Got token %s at %s\n", token, token.locus);
             }
             this.locus = token.locus;
 
@@ -2765,17 +2473,7 @@ EarleyParser.prototype = {
         items.push(new EarleyItem(rule, pos, base, token, prev, this.locus));
     },
 
-    printState: function (states, index) {
-        if (!this.debug) {
-            return;
-        }
-        var items = states[index];
-        dbg.printf("State [%d]\n", index);
-        for (var i = 0; i < items.length; i++) {
-            dbg.printf("%s\n", items[i]);
-        }
-        dbg.printf("\n");
-    },
+    printState: function (states, index) {},
 
     evaluate: function (item_in) {
         if (!item_in) {
@@ -2938,7 +2636,6 @@ GlrInteriorNode.prototype = {
         var cur = this.ref;
         var args = [];
         var locus = this.locus;
-        dbg.printf("Eval inode with state [%s]\n", this.state.id);
         for (var i = 0; i < this.rule.symbols.length; i++) {
             locus = cur.locus;
             args.unshift(cur.evaluate());
@@ -2979,7 +2676,6 @@ GlrReduceNode.prototype = {
                 return this.inodes[i];
             }
         }
-        dbg.printf("Create new inode with state [%s] rule=%s and ref=[%s]\n", this.state.id, rule, ref.state.id);
         var inode = new GlrInteriorNode(this, rule, ref);
         return inode;
     },
@@ -2989,9 +2685,7 @@ GlrReduceNode.prototype = {
     },
 
     evaluate: function () {
-        if (this.inodes.length > 1) {
-            dbg.printf("Uh oh! Choice of inodes [%s]...\n", this.state.id);
-        }
+        if (this.inodes.length > 1) return;
         return this.inodes[0].evaluate();
     }
 };
@@ -3025,9 +2719,6 @@ GlrParser.prototype = {
 
         for (;;) {
             token = this.tokenizer.nextToken(line, position);
-            if (this.debug) {
-                dbg.printf("Got token %s\n", token);
-            }
             if (token === null) {
                 this.errors.push(sprintf("Bad character at at %s:%s", line + 1, position + 1));
                 break;
@@ -3097,14 +2788,8 @@ GlrParser.prototype = {
 
     shift: function (node, symbol) {
         var nextState = this.computeNext(node.state, symbol.id);
-        if (this.debug) {
-            dbg.printf("Try to shift %s\n", symbol);
-        }
         if (nextState) {
             var nextNode = this.findNode(this.nextTops, nextState);
-            if (this.debug) {
-                dbg.printf("Shift %s\n", symbol);
-            }
             if (nextNode) {
                 nextNode.addParent(node);
             } else {
@@ -3126,56 +2811,34 @@ GlrParser.prototype = {
         if (this.limit++ === 1000) {
         }
         if (!(token.id in this.ruleSet.follow[rule.name])) {
-            dbg.printf("Skip reduction on %s due to follow set %s\n", rule.name, token);
             return;
         }
         if (node instanceof GlrReduceNode) {
-            dbg.printf("Skip processing of reduce node.\n");
             return;
         }
-        dbg.printf("Trying to reduce node with state [%s] and %d parents\n", node.state.id, node.parents.length);
         var ancestors = [];
         this.ancestors(ancestors, node, rule.symbols.length);
-        dbg.printf("    %s ancestors found\n", ancestors.length);
         for (var ai = 0; ai < ancestors.length; ai++) {
             var ancestor = ancestors[ai];
-            dbg.printf("Process ancestor #%d.\n", ai);
 
             var nextState = this.computeNext(ancestor.state, rule.name);
             if (nextState === null) {
                 continue;
             }
             var nextNode = this.findNode(this.stackTops, nextState);
-            if (this.debug) {
-                dbg.printf("Reduce by rule %s\n", rule);
-            }
             if (nextNode === null) {
                 var rnode = new GlrReduceNode(this.locus, nextState);
                 inode = rnode.getINode(rule, node);
                 inode.addParent(ancestor);
                 this.stackTops.push(rnode);
-                if (this.debug) {
-                    dbg.printf("    Connect state [%s] to [%s] via %s\n", ancestor.state.id, rnode.state.id, rule.name);
-                    dbg.printf("Recurse on new reduce node.\n");
-                }
                 this.reduceAll(inode, token);
             } else if (nextNode instanceof GlrReduceNode) {
                 inode = nextNode.getINode(rule, node);
-                dbg.printf("    RN: Connect state [%s] to [%s] via %s\n", ancestor.state.id, nextNode.state.id, rule.name);
                 if (inode.addParent(ancestor)) {
-                    if (this.debug) {
-                        dbg.printf("Recurse on processed reduce node.\n");
-                    }
-
                     this.reduceAll(inode, token);
-                } else {
-                    dbg.printf("    RN: Node already existed. No change.\n");
                 }
-            } else {
-                dbg.printf("Error! Tried to add already existing node.\n");
             }
         }
-        dbg.printf("Returning.\n");
     },
 
     printStack: function (tops) {
@@ -3183,8 +2846,6 @@ GlrParser.prototype = {
         for (var i = 0; i < tops.length; i++) {
             str += "    " + tops[i].toString() + "\n";
         }
-
-        dbg.print(str);
     },
 
     ancestors: function (paths, v, k) {
@@ -3239,9 +2900,6 @@ GlrParser.prototype = {
             GlrState.NextGlrStateId--;
         } else {
             this.cached[key] = state;
-            if (this.debug) {
-                dbg.printf("Created state:\n%s", state);
-            }
         }
         return this.cached[key];
     },
@@ -3704,12 +3362,6 @@ Tokenizer.prototype = {
             if (dfaState.nfaStates.length === 0) {
                 break;
             }
-        }
-
-        if (accept) {
-        } else if (0) {
-            dbg.printf("Bad token at '%s'\n", this.text.substr(startPosition, 10));
-            dbg.printf("ascii %d\n", this.text.charCodeAt(startPosition));
         }
 
         return accept;
@@ -4703,7 +4355,6 @@ AstReturnStatement.prototype.accept = function (visitor) {
 
 function onProgram(symbols, locus) {
     var program = new AstProgram(locus, new AstSubroutine(locus, "_main", [], symbols[0], false));
-    dbg.printf("Program successfully parsed. %d statements.\n", program.subs[0].statements.length);
     return program;
 }
 
@@ -5112,9 +4763,6 @@ function QBasicProgram(input, testMode) {
         rules.addRule("separator: ':'");
 
         rules.buildSet.check(this.errors);
-        for (var i = 0; i < this.errors.length; i++) {
-            dbg.printf("%s\n", this.errors[i]);
-        }
 
         rules.buildSet.finalize();
 
@@ -5126,7 +4774,6 @@ function QBasicProgram(input, testMode) {
     var astProgram = QBasicProgram.parser.parse(input);
     if (astProgram === null) {
         this.errors = QBasicProgram.parser.errors;
-        dbg.printf("Parse failed.\n");
         return;
     }
 
@@ -5134,7 +4781,6 @@ function QBasicProgram(input, testMode) {
     astProgram.accept(typeChecker);
 
     if (this.errors.length > 0) {
-        dbg.printf("There were errors.\n");
         return;
     }
 
@@ -5164,9 +4810,17 @@ QBasicProgram.prototype = {
             if (locus) {
                 lines.push("   ' L" + (locus.line + 1) + " " + source[locus.line]);
             }
-            lines.push("[" + i + "] " + this.instructions[i]);
+            lines.push(this.instructions[i]);
         }
         return lines.join("\n");
+    },
+    getVmInstructions: function () {
+        if (!this.instructions) return null;
+        return {
+            source: this.sourcecode,
+            lineMap: this.lineMap,
+            instructions: this.instructions
+        };
     }
 };
 
@@ -5178,6 +4832,7 @@ function compile(text: string) {
 
     if (program.errors.length === 0) {
         var bytecode = program.getByteCodeAsString();
+        var vmInstructions = program.getVmInstructions();
         virtualMachine.run(program, false);
         return {
             error: false,
@@ -5190,6 +4845,9 @@ function compile(text: string) {
             },
             get bytecode() {
                 return bytecode;
+            },
+            get vmInstructions() {
+                return vmInstructions;
             }
         };
     } else {
@@ -5206,11 +4864,12 @@ function compile(text: string) {
             },
             get bytecode() {
                 return bytecode;
+            },
+            get vmInstructions() {
+                return vmInstructions;
             }
         };
     }
 }
 
-var dbg = new DebugConsole();
-
-export { compile, dbg as debugConsole, cons as qbConsole, virtualMachine as vm };
+export { compile, cons as qbConsole, virtualMachine as vm };

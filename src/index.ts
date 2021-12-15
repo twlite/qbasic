@@ -32,10 +32,12 @@ function compile(code: string, disableOutput = false): ProgramOutput {
         qbasic.qbConsole.onClear = () => console.clear();
         qbasic.qbConsole.onInput = () => {
             if (typeof window !== "undefined") {
-                return window.prompt() || "";
+                const result = window.prompt() || "";
+                return isNaN(result as unknown as number) ? result : parseInt(result);
             } else {
                 try {
-                    return (require("readline-sync") as typeof import("readline-sync")).question("") || "";
+                    const result = (require("readline-sync") as typeof import("readline-sync")).question("") || "";
+                    return isNaN(result as unknown as number) ? result : parseInt(result);
                 } catch {
                     return "";
                 }
@@ -58,10 +60,25 @@ export interface ProgramOutput {
     readonly program: QBProgram;
     readonly source: string;
     readonly bytecode: string;
+    readonly vmInstructions: {
+        source: string;
+        lineMap: ({ line: number; position: number } | undefined)[];
+        instructions: QBVmInstructions[];
+    }[];
+}
+
+export interface QBVmInstructions {
+    instr: {
+        name: string;
+        numArgs?: number;
+        execute: Function;
+    };
+    arg?: string | number | null;
 }
 
 export interface QBProgram {
     getByteCodeAsString(): string;
+    getVmInstructions(): QBVmInstructions;
     errors: string[];
 }
 

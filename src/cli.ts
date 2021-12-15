@@ -12,13 +12,13 @@ Commands:
     `);
 } else {
     const { compileFile } = require("./index");
-    
+
     const source = process.argv
-        .find((x) => x.startsWith("--src=") || x.startsWith("--source"))
+        .find((x) => x.startsWith("--src=") || x.startsWith("--source="))
         ?.split("=")
         .pop();
     const printBytecode = process.argv.some((x) => x === "--print-bytecode");
-    
+
     if (!source) {
         console.log("\x1b[31mError: No source file provided!\x1b[0m");
     } else {
